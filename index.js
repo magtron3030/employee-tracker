@@ -98,20 +98,71 @@ const viewAllEmployees = () => {
 }
 
 
-const addDepartment = () => { inquirer.prompt([
+const addADepartment = () => { 
+      inquirer.prompt([
       {
       type: "input",
       name: "department",
-      message: "what is the name of the department?"
+      message: "What is the name of the department?"
       }
+   ]).then((answers)=> {
+      const departmentName = answers.department;
+      pool.query('INSERT INTO department (name) VALUES ($1)', [departmentName], (err, res) => {
+            if (err) {
+                  console.error( 'Error adding department:', err);
+                  return;
+                }
+                console.log(`Department ${departmentName} added successfully!`)
+                });
+                mainMenu()
+   });
+};
+
+const addARole = () => { 
+      inquirer.prompt([
+      {
+            type: "input",
+            name: "roles",
+            message: "What is the name of the role?"
+      },
+      {
+            type: "input",
+            name: "salary",
+            message: "What is the salary of the role?"
+      },
+      {
+            type: 'list',
+            name: 'department_id',
+            message: 'Which department does the role belong to?',
+            choices: ['Engineering', 'Finance', 'Legal', 'Sales']
+      },
    ])
-
-.then
-      pool.query('SELECT * FROM roles')
-}
-
-
-
+   
+   .then((answers)=> {
+      const roleName = answers.roles;
+      pool.query('INSERT INTO roles (title) VALUES ($1)', [roleName], (err, res) => {
+            if (err) {
+                  console.error( 'Error adding roles:', err);
+                  return;
+                }
+                console.log(`roles ${roleName} added successfully!`)
+      }); 
+      pool.query('INSERT INTO roles (salary) VALUES ($1)', [roleName], (err, res) => {
+            if (err) {
+                  console.error( 'Error adding salary:', err);
+                    return;
+                   }
+                   console.log(`roles ${roleName} added successfully!`)
+       }); 
+       pool.query('INSERT INTO roles (department_id) VALUES ($1)', [roleName], (err, res) => {
+            if (err) {
+                  console.error( 'Error adding department:', err);
+                    return;
+                   }
+                   console.log(`roles ${roleName} added successfully!`)
+   });
+});
+};
 
 // // Hardcoded query: DELETE FROM course_names WHERE id = 3;
 // pool.query(`DELETE FROM deparment WHERE id = $1`, [3], (err, {rows}) => {

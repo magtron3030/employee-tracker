@@ -31,16 +31,16 @@ CREATE TABLE roles (
    ON DELETE SET NULL
 );
 
-INSERT INTO roles (id, title, salary, department_id)
+INSERT INTO roles (title, salary, department_id)
    VALUES 
-          (1, 'Sales Lead', 95000, 3),
-          (2, 'Sales Person', 70000, 3),
-          (3, 'Lead Engineer', 160000, 1),
-          (4, 'Software Engineer', 130000, 1),
-          (5, 'Account Manager', 110000, 4),
-          (6, 'Accountant', 100000, 4),
-          (7, 'Legal Team Lead', 210000, 2),
-          (8, 'Lawyer', 190000, 2);
+          ('Sales Lead', 95000, 3),
+          ('Sales Person', 70000, 3),
+          ('Lead Engineer', 160000, 1),
+          ('Software Engineer', 130000, 1),
+          ('Account Manager', 110000, 4),
+          ('Accountant', 100000, 4),
+          ('Legal Team Lead', 210000, 2),
+          ('Lawyer', 190000, 2);
 
 CREATE TABLE employee (
    id SERIAL PRIMARY KEY,
