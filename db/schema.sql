@@ -67,8 +67,10 @@ VALUES ('Gerod', 'Roth', 1, NULL),
        ('Jason', 'Fooks', 6, 5),
        ('James', 'Thornton', 7, NULL),
        ('Julie', 'Kissler', 8, 7);
-         
 
+
+
+--foriegn keys are an indicator that those tables will be joined.         
 SELECT * FROM department;
 SELECT * FROM roles;
 
@@ -76,7 +78,7 @@ SELECT roles.title, department.name
    FROM roles
    JOIN department ON roles.department_id = department.id;
 
---
+--putting "AS" in it makes it so the output on the table what you want
 SELECT e.id, e.first_name, e.last_name, roles.title, department.name as department, roles.salary, CONCAT(manager.first_name, ' ', manager.last_name) as manager
 FROM employee e 
 JOIN roles ON e.roles_id = roles.id 
