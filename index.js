@@ -1,32 +1,19 @@
 
-const { exec } = require('child_process');
-
-// Run the shell script
-exec('./ascii.sh', (error, stdout, stderr) => {
-    if (error) {
-        console.error(`Error: ${error.message}`);
-        return;
-    }
-    if (stderr) {
-        console.error(`Shell script error: ${stderr}`);
-        return;
-    }
-    console.log(`Shell script output: ${stdout}`);
-});
+const fs = require('fs');
+// Read the text file synchronously
+const data = fs.readFileSync('ascii.txt', 'utf8');
+console.log(data);
 
 
 const inquirer = require('inquirer');
 // Import and require Pool (node-postgres)
-// We'll be creating a Connection Pool. Read up on the benefits here: https://node-postgres.com/features/pooling
 const { Pool } = require('pg');
 // const table = require("console.table");
 
 // Connect to database
 const pool = new Pool(
   {
-    // Enter PostgreSQL username
     user: 'maggiemcdowell',
-    // Enter PostgreSQL password
     password: 'maggie123',
     host: 'localhost',
     database: 'employee_tracker_db'
@@ -34,6 +21,7 @@ const pool = new Pool(
 console.log('Connected to the employee_tracker_db database!')
 )
 
+//main menu prompt list
 const mainMenu = () => inquirer.prompt([
    {
    type: "list",
@@ -75,6 +63,7 @@ const mainMenu = () => inquirer.prompt([
    }
 });
 
+//view all roles, departments and employees
 const viewAllRoles = () => {
       pool.query (`SELECT roles.id, roles.title, roles.salary, department.name
       FROM roles
@@ -113,6 +102,7 @@ const viewAllEmployees = () => {
 }
 
 
+//add a department, role and employee functions
 const addADepartment = () => { 
       inquirer.prompt([
       {
@@ -224,6 +214,7 @@ const addAnEmployee = () => {
       })
 }
 
+//update employee function
 const updateEmployeeRole = () => {
       pool.query('SELECT * FROM employee', (err, {rows}) => {
             const employeeChoices = rows.map( employee => ({
