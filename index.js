@@ -1,10 +1,19 @@
-/*
-Whenever you do a query look at what the output is supossed to be.
-Then I have to think about where that data is going to come from
-ex.
 
-*/
-// THEN I am presented with the following options: view all departments, view all roles, view all employees, add a department, add a role, add an employee, and update an employee role
+const { exec } = require('child_process');
+
+// Run the shell script
+exec('./ascii.sh', (error, stdout, stderr) => {
+    if (error) {
+        console.error(`Error: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.error(`Shell script error: ${stderr}`);
+        return;
+    }
+    console.log(`Shell script output: ${stdout}`);
+});
+
 
 const inquirer = require('inquirer');
 // Import and require Pool (node-postgres)
@@ -67,7 +76,9 @@ const mainMenu = () => inquirer.prompt([
 });
 
 const viewAllRoles = () => {
-      pool.query('SELECT * FROM roles', (err, {rows}) => {
+      pool.query (`SELECT roles.id, roles.title, roles.salary, department.name
+      FROM roles
+      JOIN department ON roles.department_id = department.id;`, (err, {rows}) => {
             if (err) {
                   console.log (err);
             }
@@ -88,7 +99,11 @@ const viewAllDepartments = () => {
 
 
 const viewAllEmployees = () => {
-      pool.query('SELECT * FROM employee', (err, {rows}) => {
+      pool.query (`SELECT e.id, e.first_name, e.last_name, roles.title, department.name as department, roles.salary, CONCAT(manager.first_name, ' ', manager.last_name) as manager
+      FROM employee e 
+      JOIN roles ON e.roles_id = roles.id 
+      JOIN department ON roles.department_id = department.id 
+      LEFT JOIN employee manager ON e.manager_id = manager.id`, (err, {rows}) => {
             if (err) {
                   console.log (err);
             }
@@ -122,7 +137,7 @@ const addARole = () => {
 
       pool.query('SELECT * FROM department', (err, {rows}) => {
             const deptChoices = rows.map( dept => ({
-                  name: dept.title, 
+                  name: dept.name, 
                   value: dept.id
             }))
             inquirer.prompt([
@@ -160,13 +175,14 @@ const addARole = () => {
 
 const addAnEmployee = () => { 
 
-      pool.query('SELECT * FROM employee', (err, {rows}) => {
+      pool.query('SELECT * FROM roles', (err, {rows}) => {
             const roleChoices = rows.map( roles => ({
                   name: roles.title, 
                   value: roles.id
             }))
+      pool.query('SELECT * FROM employee', (err, {rows}) => {
             const managerChoices = rows.map( employee => ({
-                  name: employee.manager_id,
+                  name: [employee.first_name + " " + employee.last_name],
                   value: employee.id
             }))
             inquirer.prompt([
@@ -181,20 +197,20 @@ const addAnEmployee = () => {
                         message: "What is the employees last name?"
                   },
                   {
-                        type: 'list',
-                        name: 'roles_id',
-                        message: 'What is the employees role?',
+                        type: "list",
+                        name: "roles_id",
+                        message: "What is the employees role?",
                         choices: roleChoices
                   },
                   {
                         type: 'list',
                         name: 'manager_id',
-                        message: 'Who is the employees manager?',
+                        message: "Who is the employees manager?",
                         choices: managerChoices
                   },
             ])
             .then((answers)=> {
-                  const employeeName = answers.employee;
+                  const employeeName = `${answers.first_name} ${answers.last_name}`;
                   pool.query('INSERT INTO employee (first_name, last_name, roles_id, manager_id) VALUES ($1, $2, $3, $4)', [ answers.first_name, answers.last_name, answers.roles_id, answers.manager_id ], (err, res) => {
                         if (err) {
                               console.error( 'Error adding employee:', err);
@@ -204,32 +220,52 @@ const addAnEmployee = () => {
                         mainMenu()
                   }); 
             });
-
+      })
       })
 }
 
-
-
-
-
-
-
-
-
+const updateEmployeeRole = () => {
+      pool.query('SELECT * FROM employee', (err, {rows}) => {
+            const employeeChoices = rows.map( employee => ({
+                  name: [employee.first_name + " " + employee.last_name],
+                  value: employee.id
+            }))
+            pool.query('SELECT * FROM roles', (err, {rows}) => {
+                  const roleChoices = rows.map( roles => ({
+                        name: roles.title, 
+                        value: roles.id
+                  }))
+            inquirer.prompt([
+                  {
+                        type: 'list',
+                        name: 'employee_id',
+                        message: "Which employee's role do you want to update?",
+                        choices: employeeChoices
+                  },
+                  {
+                        type: 'list',
+                        name: 'roles_id',
+                        message: "Which role do you want to assign the selected employee?",
+                        choices: roleChoices
+                  },
+            ])
+            .then((answers) => {
+                  const updatedRoleId = answers.roles_id;
+                  const employeeId = answers.employee_id;
+  
+                  pool.query('UPDATE employee SET roles_id = $1 WHERE id = $2', [updatedRoleId, employeeId], (err, res) => {
+                      if (err) {
+                          console.error('Error updating employee role:', err);
+                          return;
+                      }
+                      console.log(`Employee's role updated successfully`);
+                      mainMenu();
+                  }); 
+            });
+      })
+   })
+}
 mainMenu()
-
-// // Hardcoded query: DELETE FROM course_names WHERE id = 3;
-// pool.query(`DELETE FROM deparment WHERE id = $1`, [3], (err, {rows}) => {
-//   if (err) {
-//     console.log(err);
-//   }
-//   console.log(rows);
-// });
-
-// // Query database
-// pool.query('SELECT * FROM department', function (err, {rows}) {
-//   console.log(rows);
-// });
 
 
 

@@ -74,7 +74,7 @@ VALUES ('Gerod', 'Roth', 1, NULL),
 SELECT * FROM department;
 SELECT * FROM roles;
 
-SELECT roles.title, department.name
+SELECT roles.id, roles.title, roles.salary, department.name
    FROM roles
    JOIN department ON roles.department_id = department.id;
 
